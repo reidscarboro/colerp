@@ -304,8 +304,9 @@
 
 
 			function updatePreview(){
-				setBackgroundColor($('.leftPreview'), 'white', $('#leftHex').val());
-				setBackgroundColor($('.rightPreview'), 'white', $('#rightHex').val());
+				$('.leftPreview').css('background-color', $('#leftHex').val());
+				$('.rightPreview').css('background-color', $('#rightHex').val());
+
 				var leftRgb = new Object();
 				leftRgb.r = Number($('#leftR').val());
 				leftRgb.g = Number($('#leftG').val());
@@ -343,11 +344,12 @@
 				var backgroundColor = 'rgb('+rgb.r+','+rgb.g+','+rgb.b+')';
 				var rgbHslL = rgbToHsl(rgb.r, rgb.g, rgb.b).l;
 				if (rgbHslL < 0.5){
-					setBackgroundColor(rgbElement, 'white', backgroundColor);
+					rgbElement.css('color', 'white');
 				} else {
-					setBackgroundColor(rgbElement, 'black', backgroundColor);
+					rgbElement.css('color', 'black');
 				}
 				var rgbHex = rgbToHex(rgb.r, rgb.g, rgb.b);
+				rgbElement.css('background-color', rgbHex);
 				rgbElement.html(rgbHex);
 				
 				
@@ -361,20 +363,15 @@
 				hsl.l = (hsl.l < 0) ? 0 : hsl.l;
 				var backgroundColor = 'hsl('+hsl.h+','+hsl.s+'%,'+hsl.l+'%)';
 				if (hsl.l < 50){
-					setBackgroundColor(hslElement, 'white', backgroundColor);
+					hslElement.css('color', 'white');
 				} else {
-					setBackgroundColor(hslElement, 'black', backgroundColor);
+					hslElement.css('color', 'black');
 				}
 				var hslRgb = hslToRgb(hsl.h/360, hsl.s/100, hsl.l/100);
 				var hslHex = rgbToHex(hslRgb.r, hslRgb.g, hslRgb.b);
+				hslElement.css('background-color', hslHex);
 				hslElement.html(hslHex);
 			}
-
-			function setBackgroundColor(element, color, backgroundColor){
-				var style = 'background-color: ' + backgroundColor +'; color: '+color+';';
-				element.attr('style', style);
-			}
-
 
 			function isValidHex(hex){
 				return /^#[0-9A-F]{6}$/i.test(hex);
