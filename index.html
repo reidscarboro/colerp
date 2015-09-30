@@ -1,0 +1,485 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="css/styles.css" rel="stylesheet" type="text/css">
+		<link href="css/font-awesome.css" rel="stylesheet">
+		<script src="js/jquery-2.1.4.min.js"></script>
+	</head>
+	<body>
+		<div class="header">
+			colerp
+		</div>
+		<div class="subtitle">
+			Simple RGB/HSL Color Interpolation Utility
+		</div>
+		<div class="content">
+			<table class="contentDisplayTable">
+				<tr>
+					<td class="spacer"></td>
+					<td></td>
+					<td class="rgbPreview" data-scalar="-0.5"></td>
+					<td class="hslPreview" data-scalar="-0.5"></td>
+					<td></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer"></td>
+					<td></td>
+					<td class="rgbPreview" data-scalar="-0.25"></td>
+					<td class="hslPreview" data-scalar="-0.25"></td>
+					<td></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer"></td>
+					<td class="leftPreview"></td>
+					<td class="leftPreview"></td>
+					<td class="leftPreview"></td>
+					<td></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer">HEX:</td>
+					<td><input id="leftHex" class="inputFull"/></td>
+					<td class="rgbPreview" data-scalar="0.25"></td>
+					<td class="hslPreview" data-scalar="0.25"></td>
+					<td><input id="rightHex" class="inputFull"/></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer">RGB:</td>
+					<td><input id="leftR" class="leftRgb inputThird"/><input id="leftG" class="leftRgb inputThird"/><input id="leftB" class="leftRgb inputThird"/></td>
+					<td class="rgbPreview" data-scalar="0.5"></td>
+					<td class="hslPreview" data-scalar="0.5"></td>
+					<td><input id="rightR" class="rightRgb inputThird"/><input id="rightG" class="rightRgb inputThird"/><input id="rightB" class="rightRgb inputThird"/></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer">HSL ([0-360]&#176;, %, %):</td>
+					<td><input id="leftH" class="leftHsl inputThird"/><input id="leftS" class="leftHsl inputThird"/><input id="leftL" class="leftHsl inputThird"/></td>
+					<td class="rgbPreview" data-scalar="0.75"></td>
+					<td class="hslPreview" data-scalar="0.75"></td>
+					<td><input id="rightH" class="rightHsl inputThird"/><input id="rightS" class="rightHsl inputThird"/><input id="rightL" class="rightHsl inputThird"/></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer"></td>
+					<td></td>
+					<td class="rightPreview"></td>
+					<td class="rightPreview"></td>
+					<td class="rightPreview"></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer"></td>
+					<td></td>
+					<td class="rgbPreview" data-scalar="1.25"></td>
+					<td class="hslPreview" data-scalar="1.25"></td>
+					<td></td>
+					<td class="spacer"></td>
+				</tr>
+				<tr>
+					<td class="spacer"></td>
+					<td></td>
+					<td class="rgbPreview" data-scalar="1.5"></td>
+					<td class="hslPreview" data-scalar="1.5"></td>
+					<td></td>
+					<td class="spacer"></td>
+				</tr>
+			</table>
+		</div>
+		
+		<script>
+			$( document ).ready(function() {
+
+				$('.leftRgb').each(function(i, obj){
+					$(obj).val(randomInt(0, 256));
+				});
+				$('.rightRgb').each(function(i, obj){
+					$(obj).val(randomInt(0, 256));
+				});
+				updateLeftValuesRgb();
+				updateRightValuesRgb();
+
+				$('#leftHex').keyup(function(e){
+					if (isValidHex($(this).val())){
+						updateLeftValuesHex();
+					}
+				});
+				$('.leftRgb').keyup(function(e){
+					updateLeftValuesRgb();
+				});
+				$('.leftHsl').keyup(function(e){
+					updateLeftValuesHsl();
+				});
+
+				$('#rightHex').keyup(function(e){
+					if (isValidHex($(this).val())){
+						updateRightValuesHex();
+					}
+				});
+				$('.rightRgb').keyup(function(e){
+					updateRightValuesRgb();
+				});
+				$('.rightHsl').keyup(function(e){
+					updateRightValuesHsl();
+				});
+			});
+
+			function updateLeftValuesHex(){
+				var hex = $('#leftHex').val();
+				var rgb = hexToRgb(hex);
+				var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+				var hslDisplay = new Object();
+				hslDisplay.h = hsl.h;
+				hslDisplay.s = hsl.s;
+				hslDisplay.l = hsl.l;
+				hslDisplay.h = Math.round(hslDisplay.h * 360);
+				hslDisplay.s = Math.round(hslDisplay.s * 100);
+				hslDisplay.l = Math.round(hslDisplay.l * 100);
+
+				$('#leftR').val(rgb.r);
+				$('#leftG').val(rgb.g);
+				$('#leftB').val(rgb.b);
+
+				$('#leftH').val(hslDisplay.h);
+				$('#leftS').val(hslDisplay.s);
+				$('#leftL').val(hslDisplay.l);
+				updatePreview();
+			}
+
+			function updateLeftValuesRgb(){
+				if (Number($('#leftR').val()) < 0) $('#leftR').val(0);
+				if (Number($('#leftR').val()) > 255) $('#leftR').val(255);
+
+				if (Number($('#leftG').val()) < 0) $('#leftG').val(0);
+				if (Number($('#leftG').val()) > 255) $('#leftG').val(255);
+
+				if (Number($('#leftB').val()) < 0) $('#leftB').val(0);
+				if (Number($('#leftB').val()) > 255) $('#leftB').val(255);
+
+				var rgb = new Object();
+				rgb.r = Number($('#leftR').val());
+				rgb.g = Number($('#leftG').val());
+				rgb.b = Number($('#leftB').val());
+				var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+				var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+				var hslDisplay = new Object();
+				hslDisplay.h = hsl.h;
+				hslDisplay.s = hsl.s;
+				hslDisplay.l = hsl.l;
+				hslDisplay.h = Math.round(hslDisplay.h * 360);
+				hslDisplay.s = Math.round(hslDisplay.s * 100);
+				hslDisplay.l = Math.round(hslDisplay.l * 100);
+
+				$('#leftHex').val(hex);
+
+				$('#leftH').val(hslDisplay.h);
+				$('#leftS').val(hslDisplay.s);
+				$('#leftL').val(hslDisplay.l);
+				updatePreview();
+			}
+
+			function updateLeftValuesHsl(){
+				if (Number($('#leftH').val()) < 0) $('#leftH').val(0);
+				if (Number($('#leftH').val()) > 360) $('#leftH').val(360);
+
+				if (Number($('#leftS').val()) < 0) $('#leftS').val(0);
+				if (Number($('#leftS').val()) > 100) $('#leftS').val(100);
+
+				if (Number($('#leftL').val()) < 0) $('#leftL').val(0);
+				if (Number($('#leftL').val()) > 100) $('#leftL').val(100);
+
+				var hslDisplay = new Object();
+				hslDisplay.h = Number($('#leftH').val());
+				hslDisplay.s = Number($('#leftS').val());
+				hslDisplay.l = Number($('#leftL').val());
+
+				var hsl = new Object();
+				hsl.h = hslDisplay.h / 360;
+				hsl.s = hslDisplay.s / 100;
+				hsl.l = hslDisplay.l / 100;
+
+				var rgb = hslToRgb(hsl.h, hsl.s, hsl.l);
+				var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+				$('#leftHex').val(hex);
+
+				$('#leftR').val(rgb.r);
+				$('#leftG').val(rgb.g);
+				$('#leftB').val(rgb.b);
+				updatePreview();
+			}
+
+			function updateRightValuesHex(){
+				var hex = $('#rightHex').val();
+				var rgb = hexToRgb(hex);
+				var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+				var hslDisplay = new Object();
+				hslDisplay.h = hsl.h;
+				hslDisplay.s = hsl.s;
+				hslDisplay.l = hsl.l;
+				hslDisplay.h = Math.round(hslDisplay.h * 360);
+				hslDisplay.s = Math.round(hslDisplay.s * 100);
+				hslDisplay.l = Math.round(hslDisplay.l * 100);
+
+				$('#rightR').val(rgb.r);
+				$('#rightG').val(rgb.g);
+				$('#rightB').val(rgb.b);
+
+				$('#rightH').val(hslDisplay.h);
+				$('#rightS').val(hslDisplay.s);
+				$('#rightL').val(hslDisplay.l);
+				updatePreview();
+			}
+
+			function updateRightValuesRgb(){
+				if (Number($('#rightR').val()) < 0) $('#rightR').val(0);
+				if (Number($('#rightR').val()) > 255) $('#rightR').val(255);
+
+				if (Number($('#rightG').val()) < 0) $('#rightG').val(0);
+				if (Number($('#rightG').val()) > 255) $('#rightG').val(255);
+
+				if (Number($('#rightB').val()) < 0) $('#rightB').val(0);
+				if (Number($('#rightB').val()) > 255) $('#rightB').val(255);
+
+				var rgb = new Object();
+				rgb.r = Number($('#rightR').val());
+				rgb.g = Number($('#rightG').val());
+				rgb.b = Number($('#rightB').val());
+				var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+				var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+				var hslDisplay = new Object();
+				hslDisplay.h = hsl.h;
+				hslDisplay.s = hsl.s;
+				hslDisplay.l = hsl.l;
+				hslDisplay.h = Math.round(hslDisplay.h * 360);
+				hslDisplay.s = Math.round(hslDisplay.s * 100);
+				hslDisplay.l = Math.round(hslDisplay.l * 100);
+
+				$('#rightHex').val(hex);
+
+				$('#rightH').val(hslDisplay.h);
+				$('#rightS').val(hslDisplay.s);
+				$('#rightL').val(hslDisplay.l);
+				updatePreview();
+			}
+
+			function updateRightValuesHsl(){
+				if (Number($('#rightH').val()) < 0) $('#rightH').val(0);
+				if (Number($('#rightH').val()) > 360) $('#rightH').val(360);
+
+				if (Number($('#rightS').val()) < 0) $('#rightS').val(0);
+				if (Number($('#rightS').val()) > 100) $('#rightS').val(100);
+
+				if (Number($('#rightL').val()) < 0) $('#rightL').val(0);
+				if (Number($('#rightL').val()) > 100) $('#rightL').val(100);
+
+				var hslDisplay = new Object();
+				hslDisplay.h = Number($('#rightH').val());
+				hslDisplay.s = Number($('#rightS').val());
+				hslDisplay.l = Number($('#rightL').val());
+
+				var hsl = new Object();
+				hsl.h = hslDisplay.h / 360;
+				hsl.s = hslDisplay.s / 100;
+				hsl.l = hslDisplay.l / 100;
+
+				var rgb = hslToRgb(hsl.h, hsl.s, hsl.l);
+				var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+				$('#rightHex').val(hex);
+
+				$('#rightR').val(rgb.r);
+				$('#rightG').val(rgb.g);
+				$('#rightB').val(rgb.b);
+				updatePreview();
+			}
+
+
+
+			function updatePreview(){
+				setBackgroundColor($('.leftPreview'), 'white', $('#leftHex').val());
+				setBackgroundColor($('.rightPreview'), 'white', $('#rightHex').val());
+				var leftRgb = new Object();
+				leftRgb.r = Number($('#leftR').val());
+				leftRgb.g = Number($('#leftG').val());
+				leftRgb.b = Number($('#leftB').val());
+				var rightRgb = new Object();
+				rightRgb.r = Number($('#rightR').val());
+				rightRgb.g = Number($('#rightG').val());
+				rightRgb.b = Number($('#rightB').val());
+				var leftHsl = new Object();
+				leftHsl.h = Number($('#leftH').val());
+				leftHsl.s = Number($('#leftS').val());
+				leftHsl.l = Number($('#leftL').val());
+				var rightHsl = new Object();
+				rightHsl.h = Number($('#rightH').val());
+				rightHsl.s = Number($('#rightS').val());
+				rightHsl.l = Number($('#rightL').val());
+				$('.rgbPreview').each(function(i, obj){
+					updateColors($(this), leftRgb, rightRgb, $(this).next('.hslPreview'), leftHsl, rightHsl);
+				});
+			}
+
+			function updateColors(rgbElement, leftRgb, rightRgb, hslElement, leftHsl, rightHsl){
+				var scalar = rgbElement.attr('data-scalar');
+
+				var rgb = new Object();
+				rgb.r = Math.round((leftRgb.r * (1-scalar)) + (rightRgb.r * scalar));
+				rgb.r = (rgb.r > 255) ? 255 : rgb.r;
+				rgb.r = (rgb.r < 0) ? 0 : rgb.r;
+				rgb.g = Math.round((leftRgb.g * (1-scalar)) + (rightRgb.g * scalar));
+				rgb.g = (rgb.g > 255) ? 255 : rgb.g;
+				rgb.g = (rgb.g < 0) ? 0 : rgb.g;
+				rgb.b = Math.round((leftRgb.b * (1-scalar)) + (rightRgb.b * scalar));
+				rgb.b = (rgb.b > 255) ? 255 : rgb.b;
+				rgb.b = (rgb.b < 0) ? 0 : rgb.b;
+				var backgroundColor = 'rgb('+rgb.r+','+rgb.g+','+rgb.b+')';
+				var rgbHslL = rgbToHsl(rgb.r, rgb.g, rgb.b).l;
+				if (rgbHslL < 0.5){
+					setBackgroundColor(rgbElement, 'white', backgroundColor);
+				} else {
+					setBackgroundColor(rgbElement, 'black', backgroundColor);
+				}
+				var rgbHex = rgbToHex(rgb.r, rgb.g, rgb.b);
+				rgbElement.html(rgbHex);
+				
+				
+				var hsl = new Object();
+				hsl.h = LerpDegrees(leftHsl.h, rightHsl.h, scalar);
+				hsl.s = Math.round((leftHsl.s * (1-scalar)) + (rightHsl.s * scalar));
+				hsl.s = (hsl.s > 100) ? 100 : hsl.s;
+				hsl.s = (hsl.s < 0) ? 0 : hsl.s;
+				hsl.l = Math.round((leftHsl.l * (1-scalar)) + (rightHsl.l * scalar));
+				hsl.l = (hsl.l > 100) ? 100 : hsl.l;
+				hsl.l = (hsl.l < 0) ? 0 : hsl.l;
+				var backgroundColor = 'hsl('+hsl.h+','+hsl.s+'%,'+hsl.l+'%)';
+				if (hsl.l < 50){
+					setBackgroundColor(hslElement, 'white', backgroundColor);
+				} else {
+					setBackgroundColor(hslElement, 'black', backgroundColor);
+				}
+				var hslRgb = hslToRgb(hsl.h/360, hsl.s/100, hsl.l/100);
+				var hslHex = rgbToHex(hslRgb.r, hslRgb.g, hslRgb.b);
+				hslElement.html(hslHex);
+			}
+
+			function setBackgroundColor(element, color, backgroundColor){
+				var style = 'background-color: ' + backgroundColor +'; color: '+color+';';
+				element.attr('style', style);
+			}
+
+
+			function isValidHex(hex){
+				return /^#[0-9A-F]{6}$/i.test(hex);
+			}
+
+			function componentToHex(c) {
+				var hex = c.toString(16);
+				return hex.length == 1 ? "0" + hex : hex;
+			}
+
+			function randomInt(min, max) {
+				return Math.floor(Math.random() * (max - min)) + min;
+			}
+
+			function rgbToHex(r, g, b) {
+				return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+			}
+
+			function hexToRgb(hex) {
+				var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+				return result ? {
+					r: parseInt(result[1], 16),
+					g: parseInt(result[2], 16),
+					b: parseInt(result[3], 16)
+				} : null;
+			}
+
+			function rgbToHsl(r, g, b){
+			    r /= 255, g /= 255, b /= 255;
+			    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+			    var h, s, l = (max + min) / 2;
+
+			    if(max == min){
+			        h = s = 0; // achromatic
+			    }else{
+			        var d = max - min;
+			        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+			        switch(max){
+			            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+			            case g: h = (b - r) / d + 2; break;
+			            case b: h = (r - g) / d + 4; break;
+			        }
+			        h /= 6;
+			    }
+				return {
+					h: h,
+					s: s,
+					l: l
+				};
+			}
+
+			function hslToRgb(h, s, l){
+			    var r, g, b;
+
+			    if(s == 0){
+			        r = g = b = l; // achromatic
+			    }else{
+			        var hue2rgb = function hue2rgb(p, q, t){
+			            if(t < 0) t += 1;
+			            if(t > 1) t -= 1;
+			            if(t < 1/6) return p + (q - p) * 6 * t;
+			            if(t < 1/2) return q;
+			            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+			            return p;
+			        }
+
+			        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+			        var p = 2 * l - q;
+			        r = hue2rgb(p, q, h + 1/3);
+			        g = hue2rgb(p, q, h);
+			        b = hue2rgb(p, q, h - 1/3);
+			    }
+
+			    return {
+					r: Math.round(r * 255),
+					g: Math.round(g * 255),
+					b: Math.round(b * 255)
+				};
+			}
+
+			function LerpDegrees(start, end, amount) {
+		        var difference = Math.abs(end - start);
+		        if (difference > 180){
+		            if (end > start){
+		                start += 360;
+		            } else {
+		                end += 360;
+		            }
+		        }
+		        var value = (start + ((end - start) * amount));
+		        var rangeZero = 360;
+
+		        if (value >= 0 && value <= 360)
+		            return value;
+
+		        return (value % rangeZero);
+		    }
+		</script>
+		<script>
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		  ga('create', 'UA-63054651-1', 'auto');
+		  ga('send', 'pageview');
+		</script>
+	</body>
+</html>
